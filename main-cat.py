@@ -53,7 +53,7 @@ def get_color_for_condition(condition_score):
     return CONDITION_COLOR_MAP.get(condition_score, CONDITION_COLOR_MAP[0])
 
 
-def render_condition_map(hex_layer, boundary_layer, contour_layer, show_plot=False):
+def render_condition_map(hex_layer, boundary_layer, contour_layer, show_plot=False, save_png=False):
     '''Render the condition map'''
     # Set up axes.
     ax = plt.axes(projection=ccrs.OSGB())
@@ -111,6 +111,13 @@ def render_condition_map(hex_layer, boundary_layer, contour_layer, show_plot=Fal
     # Add legend.
     ax.legend(handles=legend_layers, labels=legend_labels, title=CONDITION_LEGEND_TITLE)
 
+    # Save png.
+    if save_png:
+        dpi_value = 1000
+        zoom_level = 19
+        output_path = f"./outputs/condition-map-with-dpi-{dpi_value}-and-zoom-{zoom_level}.png"
+        plt.savefig(output_path, bbox_inches='tight', pad_inches = 0, dpi=dpi_value)
+
     # Show plot.
     if show_plot:
         plt.show()
@@ -130,7 +137,7 @@ def geom_to_path(geom):
     return Path(coords)
 
 
-def render_habitat_map(hex_layer, boundary_layer, contour_layer, show_plot=False):
+def render_habitat_map(hex_layer, boundary_layer, contour_layer, show_plot=False, save_png=False):
     '''Render the habitat map'''
     # Set up axes.
     ax = plt.axes(projection=ccrs.OSGB())
@@ -196,6 +203,13 @@ def render_habitat_map(hex_layer, boundary_layer, contour_layer, show_plot=False
                                               zorder=1)
     ax.add_feature(contour_feature)
 
+    # Save png.
+    if save_png:
+        dpi_value = 1000
+        zoom_level = 19
+        output_path = f"./outputs/habitat-map-with-dpi-{dpi_value}-and-zoom-{zoom_level}.png"
+        plt.savefig(output_path, bbox_inches='tight', pad_inches = 0, dpi=dpi_value)
+
     # Show plot.
     if show_plot:
         plt.show()
@@ -207,8 +221,8 @@ def main():
     boundary_layer = gpd.read_file('./data/Royal Alexandra & Albert School.shp', engine='pyogrio')
     contour_layer = gpd.read_file('./data/contours.gpkg', boundary_layer, engine='pyogrio')
 
-    #render_condition_map(hex_layer, boundary_layer, contour_layer, show_plot=True)
-    render_habitat_map(hex_layer, boundary_layer, contour_layer, show_plot=True)
+    #render_condition_map(hex_layer, boundary_layer, contour_layer, show_plot=True, save_png=True)
+    render_habitat_map(hex_layer, boundary_layer, contour_layer, show_plot=True, save_png=True)
 
 
 if __name__ == "__main__":

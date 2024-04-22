@@ -1,6 +1,7 @@
 data/
-styles/
+style_files/
 habitats_symbology/
+outputs/
 *env
 *png
 *.DS_Store

@@ -210,6 +210,21 @@ docs = ["ipython", "matplotlib", "numpydoc", "sphinx"]
 tests = ["pytest", "pytest-cov", "pytest-xdist"]
 
 [[package]]
+name = "descartes"
+version = "1.1.0"
+description = "Use geometric objects as matplotlib paths and patches"
+optional = false
+python-versions = "*"
+files = [
+    {file = "descartes-1.1.0-py2-none-any.whl", hash = "sha256:b7e412e7e6e294412f1d0f661f187babc970088c2456089e6801eebb043c2e1b"},
+    {file = "descartes-1.1.0-py3-none-any.whl", hash = "sha256:4c62dc41109689d03e4b35de0a2bcbdeeb81047badc607c4415d5c753bd683af"},
+    {file = "descartes-1.1.0.tar.gz", hash = "sha256:135a502146af5ed6ff359975e2ebc5fa4b71b5432c355c2cafdc6dea1337035b"},
+]
+
+[package.dependencies]
+matplotlib = "*"
+
+[[package]]
 name = "fiona"
 version = "1.9.6"
 description = "Fiona reads and writes spatial data files"
@@ -969,4 +984,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "3ebd1b2160095d4dd3126a56aaa7650fdaf9c87289a75bdc8656c127db05644c"
+content-hash = "362ce7ea32c50df0d1a16ab101528b3780c2c8e94cdb0f9d9eaf2c9d63945577"
