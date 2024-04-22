@@ -12,3 +12,7 @@ poetry install
 poetry run python main-cartopy.py
 ```
 
+## Other notes
+
+The convert-qml.py is s script to convert qml to xml which could be useful in future
+

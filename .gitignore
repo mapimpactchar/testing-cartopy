@@ -3,3 +3,4 @@ styles/
 habitats_symbology/
 *env
 *png
+*.DS_Store
