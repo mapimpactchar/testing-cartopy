@@ -1,9 +1,14 @@
+import sys
+
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import matplotlib.transforms as mtransforms
 
 from matplotlib.image import BboxImage
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+from matplotlib.path import Path
+
+from descartes.patch import PolygonPatch
 
 from cartopy.io.img_tiles import OSM
 import cartopy.crs as ccrs
@@ -111,31 +116,18 @@ def render_condition_map(hex_layer, boundary_layer, contour_layer, show_plot=Fal
         plt.show()
 
 
-def load_habitat_icon(habitat_name, crop_geom):
-    habitat_img = plt.imread(f'style_files/habitats_symbology/{habitat_name}.png')
+def load_habitat_icon(habitat_name):
+    return plt.imread(f'style_files/habitats_symbology/{habitat_name}.png')
 
-    print(f'Cropping {habitat_name}.png with geometry:')
-    print(type(crop_geom))
 
-    # Crop to hexagon.
-    height, width, _ = habitat_img.shape
-    bounds_x0, bounds_y0, bounds_x1, bounds_y1 = crop_geom.bounds
-    print(f'{width},{height}')
+def geom_to_path(geom):
+    # Convert MultiPolygon to Polygon
+    if geom.geom_type == 'MultiPolygon':
+        geom = geom.buffer(0)
 
-    for y in range(height):
-        for x in range(width):
-            x_norm = (x + 0.5) / (width - 1.0)
-            y_norm = (y + 0.5) / (height - 1.0)
-
-            x_projected = bounds_x0 + x_norm * (bounds_x1 - bounds_x0)
-            y_projected = bounds_y0 + y_norm * (bounds_y1 - bounds_y0)
-
-            point = shapely.geometry.Point(x_projected, y_projected)
-
-            if not point.within(crop_geom):
-                habitat_img[y, x] = [0.0, 0.0, 0.0, 0.0]
-
-    return habitat_img
+    # Get polygon coords and construct Path.
+    coords = geom.exterior.coords
+    return Path(coords)
 
 
 def render_habitat_map(hex_layer, boundary_layer, contour_layer, show_plot=False):
@@ -149,17 +141,13 @@ def render_habitat_map(hex_layer, boundary_layer, contour_layer, show_plot=False
     zoom_level = 18
     ax.add_image(osm, zoom_level, cmap='gray')
 
-    # Get the hexagon to clip the icons with.
-    # TODO: This might get an incomplete hex and needs to handle that.
-    clip_hex = hex_layer.iloc[527].geometry
-
     # Add hexes.
     for habitat in hex_layer[HABITAT_COLUMN].unique():
         # Filter hexes to habitat.
         hexes = hex_layer[hex_layer[HABITAT_COLUMN] == habitat]
 
         # Load icon for habitat.
-        habitat_img = load_habitat_icon(habitat, clip_hex)
+        habitat_img = load_habitat_icon(habitat)
 
         # Add outlines.
         ax.add_geometries(hexes['geometry'],
@@ -171,9 +159,19 @@ def render_habitat_map(hex_layer, boundary_layer, contour_layer, show_plot=False
                           zorder=50)
 
         # Add icons.
-        for centroid in hexes.geometry.centroid:
-            extents = [centroid.x - 25, centroid.x + 25, centroid.y - 25, centroid.y + 25]
-            ax.imshow(habitat_img, extent=extents, zorder=25)
+        for geom in hexes.geometry:
+            centroid = geom.centroid
+
+            # Get bounds of geometry to draw image to, and flip them from (x0, y0, x1, y1)
+            # to (x0, x1, y0, y1) for matplotlib.
+            bounds = geom.bounds
+            bounds = [bounds[0], bounds[2], bounds[1], bounds[3]]
+
+            # Add image.
+            im = ax.imshow(habitat_img, extent=bounds, zorder=25)
+
+            # Clip to geometry.
+            im.set_clip_path(geom_to_path(geom), transform=ax.transData)
 
     # Add boundary.
     boundary_geometries = list(boundary_layer.geometry)
