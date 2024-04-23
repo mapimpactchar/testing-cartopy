@@ -35,17 +35,29 @@ CONDITION_LABELS = {
 HABITAT_COLUMN = 'BiodiversityCheck_H'
 CONDITION_COLUMN = 'Condition'
 
+BUFFER_X = 800
+BUFFER_Y = 200
+
 CONDITION_LEGEND_TITLE = 'Condition September 2023'
 
+OUTPUT_DPI = 600
 
-def buffer_extents(layer, x_buffer, y_buffer):
-    extents = layer.total_bounds
+OSM_LEVEL = 16
+
+
+def buffer_extents(extents, x_buffer, y_buffer):
+    '''Buffer a bounding box in [x0, x1, y0, y1] format (matplotlib)'''
     return [
         extents[0] - x_buffer,
-        extents[2] + x_buffer,
-        extents[1] - y_buffer,
+        extents[1] + x_buffer,
+        extents[2] - y_buffer,
         extents[3] + y_buffer
     ]
+
+
+def transpose_bounds(bounds):
+    '''Transpose a bounding box from geopandas to matplotlib or vice versa'''
+    return [bounds[0], bounds[2], bounds[1], bounds[3]]
 
 
 def get_color_for_condition(condition_score):
@@ -53,16 +65,25 @@ def get_color_for_condition(condition_score):
     return CONDITION_COLOR_MAP.get(condition_score, CONDITION_COLOR_MAP[0])
 
 
-def render_condition_map(hex_layer, boundary_layer, contour_layer, show_plot=False, save_png=False):
+def render_condition_map(hex_layer,
+                         boundary_layer,
+                         contour_layer,
+                         out_filename=None,
+                         show_plot=False):
     '''Render the condition map'''
+    print('Rendering condition map...')
+
+    # Convert layer bounds to plot bounds (different orders) and add buffer.
+    layer_bounds = hex_layer.total_bounds
+    plot_bounds = buffer_extents(transpose_bounds(layer_bounds), BUFFER_X, BUFFER_Y)
+
     # Set up axes.
     ax = plt.axes(projection=ccrs.OSGB())
-    ax.set_extent(buffer_extents(hex_layer, 800, 200), crs=ccrs.OSGB())
+    ax.set_extent(plot_bounds, crs=ccrs.OSGB())
 
     # Add OSM layer to background.
     osm = OSM(desired_tile_form='L')
-    zoom_level = 18
-    ax.add_image(osm, zoom_level, cmap='gray')
+    ax.add_image(osm, OSM_LEVEL, cmap='gray', interpolation='bicubic')
 
     # Create list for legend layers.
     legend_layers = []
@@ -111,15 +132,17 @@ def render_condition_map(hex_layer, boundary_layer, contour_layer, show_plot=Fal
     # Add legend.
     ax.legend(handles=legend_layers, labels=legend_labels, title=CONDITION_LEGEND_TITLE)
 
-    # Save png.
-    if save_png:
-        dpi_value = 1000
-        zoom_level = 19
-        output_path = f"./outputs/condition-map-with-dpi-{dpi_value}-and-zoom-{zoom_level}.png"
-        plt.savefig(output_path, bbox_inches='tight', pad_inches = 0, dpi=dpi_value)
+    # Render plot to image.
+    if out_filename is not None:
+        print(f'Outputting condition map to {out_filename}')
+        plt.savefig(out_filename,
+                    bbox_inches='tight',
+                    pad_inches=0,
+                    dpi=OUTPUT_DPI)
 
     # Show plot.
     if show_plot:
+        print('Showing plot')
         plt.show()
 
 
@@ -137,16 +160,25 @@ def geom_to_path(geom):
     return Path(coords)
 
 
-def render_habitat_map(hex_layer, boundary_layer, contour_layer, show_plot=False, save_png=False):
+def render_habitat_map(hex_layer,
+                       boundary_layer,
+                       contour_layer,
+                       out_filename=None,
+                       show_plot=False):
     '''Render the habitat map'''
+    print('Rendering habitat map...')
+
+    # Convert layer bounds to plot bounds (different orders) and add buffer.
+    layer_bounds = hex_layer.total_bounds
+    plot_bounds = buffer_extents(transpose_bounds(layer_bounds), BUFFER_X, BUFFER_Y)
+
     # Set up axes.
     ax = plt.axes(projection=ccrs.OSGB())
-    ax.set_extent(buffer_extents(hex_layer, 800, 200), crs=ccrs.OSGB())
+    ax.set_extent(plot_bounds, crs=ccrs.OSGB())
 
     # Add OSM layer to background.
     osm = OSM(desired_tile_form='L')
-    zoom_level = 18
-    ax.add_image(osm, zoom_level, cmap='gray')
+    ax.add_image(osm, OSM_LEVEL, cmap='gray')
 
     # Add hexes.
     for habitat in hex_layer[HABITAT_COLUMN].unique():
@@ -203,15 +235,17 @@ def render_habitat_map(hex_layer, boundary_layer, contour_layer, show_plot=False
                                               zorder=1)
     ax.add_feature(contour_feature)
 
-    # Save png.
-    if save_png:
-        dpi_value = 1000
-        zoom_level = 19
-        output_path = f"./outputs/habitat-map-with-dpi-{dpi_value}-and-zoom-{zoom_level}.png"
-        plt.savefig(output_path, bbox_inches='tight', pad_inches = 0, dpi=dpi_value)
+    # Render plot to image.
+    if out_filename is not None:
+        print(f'Outputting habitat map to {out_filename}')
+        plt.savefig(out_filename,
+                    bbox_inches='tight',
+                    pad_inches=0,
+                    dpi=OUTPUT_DPI)
 
     # Show plot.
     if show_plot:
+        print('Showing plot')
         plt.show()
 
 
@@ -221,8 +255,19 @@ def main():
     boundary_layer = gpd.read_file('./data/Royal Alexandra & Albert School.shp', engine='pyogrio')
     contour_layer = gpd.read_file('./data/contours.gpkg', boundary_layer, engine='pyogrio')
 
-    #render_condition_map(hex_layer, boundary_layer, contour_layer, show_plot=True, save_png=True)
-    render_habitat_map(hex_layer, boundary_layer, contour_layer, show_plot=True, save_png=True)
+    render_condition_map(hex_layer,
+                         boundary_layer,
+                         contour_layer,
+                         out_filename='condition_map.png',
+                         show_plot=False)
+
+    render_habitat_map(hex_layer,
+                       boundary_layer,
+                       contour_layer,
+                       out_filename='habitat_map.png',
+                       show_plot=False)
+
+    print('Done!')
 
 
 if __name__ == "__main__":
