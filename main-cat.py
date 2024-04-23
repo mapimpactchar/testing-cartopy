@@ -42,7 +42,7 @@ CONDITION_LEGEND_TITLE = 'Condition September 2023'
 
 OUTPUT_DPI = 600
 
-OSM_LEVEL = 16
+OSM_LEVEL = 17
 
 
 def buffer_extents(extents, x_buffer, y_buffer):
@@ -83,7 +83,7 @@ def render_condition_map(hex_layer,
 
     # Add OSM layer to background.
     osm = OSM(desired_tile_form='L')
-    ax.add_image(osm, OSM_LEVEL, cmap='gray', interpolation='bicubic')
+    ax.add_image(osm, OSM_LEVEL, cmap='gray', interpolation='spline36', regrid_shape=4000)
 
     # Create list for legend layers.
     legend_layers = []
@@ -178,7 +178,7 @@ def render_habitat_map(hex_layer,
 
     # Add OSM layer to background.
     osm = OSM(desired_tile_form='L')
-    ax.add_image(osm, OSM_LEVEL, cmap='gray')
+    ax.add_image(osm, OSM_LEVEL, cmap='gray', interpolation='spline36', regrid_shape=4000)
 
     # Add hexes.
     for habitat in hex_layer[HABITAT_COLUMN].unique():
@@ -189,13 +189,13 @@ def render_habitat_map(hex_layer,
         habitat_img = load_habitat_icon(habitat)
 
         # Add outlines.
-        ax.add_geometries(hexes['geometry'],
-                          crs=hex_layer.crs,
-                          facecolor="None",
-                          edgecolor="black",
-                          linestyle='-',
-                          linewidth=0.26,
-                          zorder=50)
+        #ax.add_geometries(hexes['geometry'],
+        #                  crs=hex_layer.crs,
+        #                  facecolor="None",
+        #                  edgecolor="black",
+        #                  linestyle='-',
+        #                  linewidth=0.26,
+        #                  zorder=50)
 
         # Add icons.
         for geom in hexes.geometry:
