@@ -7,6 +7,7 @@ import matplotlib.transforms as mtransforms
 from matplotlib.image import BboxImage
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 from matplotlib.path import Path
+from matplotlib_scalebar.scalebar import ScaleBar
 
 from descartes.patch import PolygonPatch
 
@@ -144,7 +145,11 @@ def render_condition_map(hex_layer,
     ax.add_feature(contour_feature)
 
     # Add legend.
-    ax.legend(handles=legend_layers, labels=legend_labels, title=CONDITION_LEGEND_TITLE)
+    legend = plt.legend(handles=legend_layers, labels=legend_labels, loc='lower right', fontsize=5)
+    legend.set_title(CONDITION_LEGEND_TITLE, prop={'size': 6})
+
+    # Add Scalebar.
+    plt.gca().add_artist(ScaleBar(1.0, location='lower left', box_alpha=0, label_loc='right'))
 
     # Render plot to image.
     if out_filename is not None:
@@ -240,6 +245,9 @@ def render_habitat_map(hex_layer,
                                               zorder=1)
     ax.add_feature(contour_feature)
 
+    # Add Scalebar.
+    plt.gca().add_artist(ScaleBar(1.0, location='lower left', box_alpha=0, label_loc='right'))
+
     # Render plot to image.
     if out_filename is not None:
         print(f'Outputting habitat map to {out_filename}')
@@ -318,6 +326,9 @@ def render_habitat_condition_map(hex_layer,
                                               alpha=0.5,
                                               zorder=1)
     ax.add_feature(contour_feature)
+
+    # Add Scalebar.
+    plt.gca().add_artist(ScaleBar(1.0, location='lower left', box_alpha=0, label_loc='right'))
 
     # Render plot to image.
     if out_filename is not None:

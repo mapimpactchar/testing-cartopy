@@ -516,6 +516,20 @@ pyparsing = ">=2.3.1"
 python-dateutil = ">=2.7"
 
 [[package]]
+name = "matplotlib-scalebar"
+version = "0.8.1"
+description = "Artist for matplotlib to display a scale bar"
+optional = false
+python-versions = "~=3.7"
+files = [
+    {file = "matplotlib-scalebar-0.8.1.tar.gz", hash = "sha256:14887af1093579c5e6afae51a0a1ecc3f715cdbc5c4d7ef59cdeec76ee6bb15d"},
+    {file = "matplotlib_scalebar-0.8.1-py2.py3-none-any.whl", hash = "sha256:a8a2f361d4c2d576d087df3092ed95cac2f708f8b40d5d2bb992bd190e740b3a"},
+]
+
+[package.dependencies]
+matplotlib = "*"
+
+[[package]]
 name = "numpy"
 version = "1.26.4"
 description = "Fundamental package for array computing in Python"
@@ -984,4 +998,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "362ce7ea32c50df0d1a16ab101528b3780c2c8e94cdb0f9d9eaf2c9d63945577"
+content-hash = "3db2d5f420af822a1f8fce8dcf024da8d0a9991bdbf64b86c62203d9a7fb48d2"
